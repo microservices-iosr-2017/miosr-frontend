@@ -1,0 +1,60 @@
+{
+  "extends": "airbnb",
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true
+  },
+  "globals": {
+    "chai": true,
+    "expect": true, /* for chai */
+    "sinon": true,
+    "def": true,
+    "subject": true,
+    "$subject": true,
+    "get": true,
+    "FactoryGirl": true,
+    "sharedExamplesFor": true,
+    "includeExamplesFor": true,
+    "itBehavesLike": true
+  },
+  "rules": {
+    "strict": "off",
+    "object-curly-spacing": ["error", "never"],
+    "no-unused-vars": ["error", {
+      "argsIgnorePattern": "^_" ,
+      "varsIgnorePattern": "^_",
+      "caughtErrorsIgnorePattern": "^ignore"
+    }],
+    "curly": ["error", "multi-line", "consistent"],
+    "global-require": "off",
+    "keyword-spacing": "off",
+    "space-before-function-paren": ["error", "never"],
+    "arrow-body-style": "off",
+    "no-else-return": "off",
+    "no-underscore-dangle": "off",
+    "no-var": "off",
+    "no-param-reassign": "off",
+    "quote-props": ["error", "consistent-as-needed"],
+    "comma-dangle": ["error", "only-multiline"],
+    "one-var": ["error", {"initialized": "never"}],
+    "one-var-declaration-per-line": "off",
+    "no-prototype-builtins": "off",
+    "no-restricted-syntax": "off",
+    "class-methods-use-this": "off",
+    "block-spacing": "off",
+    "comma-spacing": "off",
+    "func-names": "off",
+    "arrow-parens": "off",
+
+    "import/imports-first": "off",
+    "import/no-unresolved": "off",
+
+    "react/prefer-es6-class": "off",
+    "react/no-multi-comp": "off",
+    "react/jsx-closing-bracket-location": ["error", "after-props"],
+    "react/jsx-first-prop-new-line": ["error", "never"],
+    "react/jsx-indent-props": "off"
+  }
+}
