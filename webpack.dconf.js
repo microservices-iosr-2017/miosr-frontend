@@ -2,7 +2,6 @@ const path = require('path');
 const _ = require('lodash');
 const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
-const OfflinePlugin = require('offline-plugin');
 
 function base() {
   return {
@@ -39,24 +38,6 @@ function base() {
         Response: 'imports?this=>global!exports?global.Response!whatwg-fetch',
         Headers: 'imports?this=>global!exports?global.Headers!whatwg-fetch',
       }),
-      // Offline plugin should be the last plugin on the list
-      new OfflinePlugin({
-        caches: {
-          main: ['app.html', '*.bundle.js'],
-          additional: ['*.+(woff|woff2|ttf|eot|svg)'],
-        },
-        externals: ['app.html'],
-        ServiceWorker: {
-          entry: './src/node_modules/client/sw.js',
-          navigateFallbackURL: '/app.html',
-        },
-        AppCache: {
-          FALLBACK: {
-            '/app.html': '/app.html',
-          },
-        },
-        safeToUseOptionalCaches: true,
-      }),
     ],
     externals: {},
     postcss: function () {
@@ -64,18 +45,6 @@ function base() {
     },
     resolve: {
       extensions: ['', '.js', '.jsx', '.json'],
-      alias: {
-        'alt-instance': 'client/app/alt',
-        'routes': 'client/app/routes',
-        'components': 'client/app/components',
-        'actions': 'client/app/actions',
-        'stores': 'client/app/stores',
-        'sources': 'client/app/sources',
-        'proptypes': 'client/app/proptypes',
-        'schemas': 'client/app/proptypes/schemas',
-        'mixins': 'client/app/mixins',
-        'helpers': 'client/app/helpers',
-      },
     },
     sassLoader: {
       includePaths: [
@@ -84,10 +53,8 @@ function base() {
       sourceMap: true
     },
     sassResources: [
-      path.join(__dirname, 'src/node_modules/client/assets/resources.scss'),
-      path.join(__dirname, 'src/node_modules/client/assets/_variables.scss'),
-      path.join(__dirname, 'src/node_modules/client/assets/_mixins.scss'),
-    ],
+
+      ],
   };
 }
 
