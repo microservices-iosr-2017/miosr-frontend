@@ -141,6 +141,7 @@ gulp.task('env:dist', () => {
  * Tasks
  ********************/
 
+/* Linting */
 gulp.task('lint:client', () => {
   return gulp.src(paths.client.scripts)
     .pipe(lintScripts());
@@ -163,6 +164,45 @@ gulp.task('lint:servertests', () => {
 
 gulp.task('lint', ['lint:client', 'lint:clienttests', 'lint:server', 'lint:servertests']);
 
+
+/* Building client code with webpack, serving it locally */
+
+gulp.task('copy:extras', () => {
+  return gulp.src(paths.client.extras, {dot: true})
+    .pipe(gulp.dest(clientOut));
+});
+
+function webpackBuilder(baseConfig, pathConfig) {
+  return gulp.src(pathConfig.entrypoint)
+    .pipe(webpackStream(webpackConf(baseConfig, pathConfig)))
+    .pipe(gulp.dest(clientOut));
+}
+
+gulp.task('webpack', () => {
+  return webpackBuilder(wpConf.dev, paths.client.app);
+});
+
+gulp.task('webpack:dist', () => {
+  return webpackBuilder(wpConf.prod, paths.client.app);
+});
+
+gulp.task('serve', cb => {
+  runSequence(
+    'build',
+    'start',
+    'watch',
+    cb);
+});
+
+gulp.task('serve:dist', cb => {
+  runSequence(
+    'build:dist',
+    'start:dist',
+    cb);
+});
+
+
+/* Server startup */
 function onServerLog(log) {
   console.log(plugins.util.colors.white('[') +
     plugins.util.colors.yellow('nodemon') +
@@ -192,21 +232,7 @@ gulp.task('start:dist', cb => {
     cb);
 });
 
-gulp.task('serve', cb => {
-  runSequence(
-    'build',
-    'start',
-    'watch',
-    cb);
-});
-
-gulp.task('serve:dist', cb => {
-  runSequence(
-    'build:dist',
-    'start:dist',
-    cb);
-});
-
+/* Client code livereload */
 gulp.task('watch', () => {
   plugins.livereload.listen();
 
@@ -226,6 +252,10 @@ gulp.task('watch', () => {
       .pipe(plugins.livereload());
   });
 });
+
+/********************
+ * Testing
+ ********************/
 
 gulp.task('test', cb => {
   return runSequence('test:server', 'test:client', cb);
@@ -304,8 +334,19 @@ function startKarmaServer(continous, done) {
 }
 
 /********************
- * Build
+ * Build release version, ready to be deployed
  ********************/
+
+gulp.task('transpile:server', () => {
+  return gulp.src(_.union(paths.server.scripts, paths.server.json))
+    .pipe(plugins.sourcemaps.init())
+    .pipe(plugins.babel({
+      plugins: ['transform-runtime']
+    }))
+    .pipe(plugins.sourcemaps.write('.'))
+    .pipe(gulp.dest(serverOut));
+});
+
 
 gulp.task('build', cb => {
   runSequence(
@@ -324,38 +365,11 @@ gulp.task('build:dist', cb => {
     cb);
 });
 
+/* helper tasks for cleaning */
+
 gulp.task('clean:out', () => del([`${out}/**/*`], {dot: true}));
 
 gulp.task('clean:lintrubbish', () => del(['./**/*_scsslint_tmp*', '!./node_modules/**/*'], {dot: true}));
-
-gulp.task('copy:extras', () => {
-  return gulp.src(paths.client.extras, {dot: true})
-    .pipe(gulp.dest(clientOut));
-});
-
-function webpackBuilder(baseConfig, pathConfig) {
-  return gulp.src(pathConfig.entrypoint)
-    .pipe(webpackStream(webpackConf(baseConfig, pathConfig)))
-    .pipe(gulp.dest(clientOut));
-}
-
-gulp.task('webpack', () => {
-  return webpackBuilder(wpConf.dev, paths.client.app);
-});
-
-gulp.task('webpack:dist', () => {
-  return webpackBuilder(wpConf.prod, paths.client.app);
-});
-
-gulp.task('transpile:server', () => {
-  return gulp.src(_.union(paths.server.scripts, paths.server.json))
-    .pipe(plugins.sourcemaps.init())
-    .pipe(plugins.babel({
-      plugins: ['transform-runtime']
-    }))
-    .pipe(plugins.sourcemaps.write('.'))
-    .pipe(gulp.dest(serverOut));
-});
 
 gulp.task('debug:webpackConf', cb => {
   console.log('=== APP DEVELOPMENT ===\n' + JSON.stringify(webpackConf(wpConf.dev, paths.client.app), null, 2));
