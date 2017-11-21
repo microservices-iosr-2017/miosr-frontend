@@ -116,7 +116,6 @@
     "rosie": "^1.6.0",
     "run-sequence": "^1.1.0",
     "sass-loader": "^3.2.0",
-    "sass-resources-loader": "^1.1.0",
     "serviceworker-loader": "^0.1.0",
     "sinon": "^1.16.1",
     "sinon-chai": "^2.8.0",

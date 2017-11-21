@@ -15,7 +15,7 @@ function base() {
         include: [/src[\/\\]node_modules/]
       }, {
         test: /\.scss$/,
-        loaders: ['style', 'css', 'postcss', 'resolve-url', 'sass', 'sass-resources'],
+        loaders: ['style', 'css', 'postcss', 'resolve-url', 'sass'],
       }, {
         test: /\.css$/,
         loaders: ['style', 'css', 'postcss']
@@ -47,14 +47,8 @@ function base() {
       extensions: ['', '.js', '.jsx', '.json'],
     },
     sassLoader: {
-      includePaths: [
-        './node_modules/bootstrap-sass/assets/stylesheets'
-      ],
       sourceMap: true
     },
-    sassResources: [
-
-      ],
   };
 }
 

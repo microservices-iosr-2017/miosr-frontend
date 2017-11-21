@@ -48,7 +48,7 @@ const paths = {
       `${clientTestPath}/**/*.jsx`,
     ],
     app: {
-      entrypoint: `${appDir}/app.jsx`,
+      entrypoint: `${clientPath}/app.jsx`,
       htmlTemplate: `${clientPath}/template.html`,
       outputPageName: 'index.html'
     },
@@ -213,7 +213,7 @@ gulp.task('watch', () => {
   const intellijTempFileSuffix = '___jb_tmp___';
   const webpackDev = webpackConf(wpConf.dev, paths.client.app);
 
-  return plugins.watch([`${appDir}/**/*`, paths.client.app.htmlTemplate,
+  return plugins.watch([`${clientPath}/**/*`, paths.client.app.htmlTemplate,
     `!/**/*${intellijTempFileSuffix}`, `${paths.client.sharedJs}/**/*`], {
     name: 'AppWatcher'
   }, () => {
