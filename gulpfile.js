@@ -16,10 +16,6 @@ const wpConf = require('./webpack.dconf');
 
 const nodemon = require('nodemon');
 const KarmaServer = require('karma').Server;
-const Protractor = require('gulp-protractor');
-const protractor = Protractor.protractor;
-const webdriver_update = Protractor.webdriver_update;
-const Instrumenter = require('isparta').Instrumenter;
 
 const argv = yargs
   .alias('b', 'browsers')
@@ -39,8 +35,6 @@ const clientTestPath = `${srcDir}/tests/client`;
 const serverTestPath = `${srcDir}/tests/server`;
 const clientOut = `${out}/client`;
 const serverOut = `${out}/server`;
-const indexDir = `${clientPath}/index`;
-const appDir = `${clientPath}/app`;
 
 const paths = {
   client: {
@@ -53,22 +47,13 @@ const paths = {
       `${clientTestPath}/**/*.js`,
       `${clientTestPath}/**/*.jsx`,
     ],
-    sharedJs: `${clientPath}/sharedjs`,
-    index: {
-      entrypoint: `${indexDir}/index.jsx`,
-      htmlTemplate: `${clientPath}/template.html`,
-      outputPageName: 'index.html'
-    },
     app: {
       entrypoint: `${appDir}/app.jsx`,
       htmlTemplate: `${clientPath}/template.html`,
-      outputPageName: 'app.html'
+      outputPageName: 'index.html'
     },
-    e2e: ['e2e/**/*.spec.js'],
     // copied to client directory without processing
     extras: [
-      `${clientPath}/favicon.ico`,
-      `${clientPath}/robots.txt`,
       `${clientPath}/.htaccess`
     ]
   },
@@ -125,21 +110,6 @@ function mocha(port) {
     ]
   });
 }
-
-let istanbul = lazypipe()
-  .pipe(plugins.istanbul.writeReports)
-  .pipe(plugins.istanbulEnforcer, {
-    thresholds: {
-      global: {
-        lines: 80,
-        statements: 80,
-        branches: 80,
-        functions: 80
-      }
-    },
-    coverageDirectory: './coverage',
-    rootDirectory: ''
-  });
 
 /********************
  * Env
@@ -241,29 +211,15 @@ gulp.task('watch', () => {
   plugins.livereload.listen();
 
   const intellijTempFileSuffix = '___jb_tmp___';
-  const webpackDevIndex = webpackConf(wpConf.dev, paths.client.index);
-  const webpackDevApp = webpackConf(wpConf.dev, paths.client.app);
+  const webpackDev = webpackConf(wpConf.dev, paths.client.app);
 
-  plugins.watch([`${appDir}/**/*`, paths.client.app.htmlTemplate,
+  return plugins.watch([`${appDir}/**/*`, paths.client.app.htmlTemplate,
     `!/**/*${intellijTempFileSuffix}`, `${paths.client.sharedJs}/**/*`], {
     name: 'AppWatcher'
   }, () => {
     gulp.src(paths.client.app.entrypoint)
       .pipe(plumber())
       .pipe(webpackStream(webpackDevApp).on('error', function () {
-        this.emit('end')
-      }))
-      .pipe(gulp.dest(clientOut))
-      .pipe(plugins.livereload());
-  });
-
-  return plugins.watch([`${indexDir}/**/*`, paths.client.index.htmlTemplate,
-    `!/**/*${intellijTempFileSuffix}`, `${paths.client.sharedJs}/**/*`], {
-    name: 'IndexWatcher'
-  }, () => {
-    gulp.src(paths.client.index.entrypoint)
-      .pipe(plumber())
-      .pipe(webpackStream(webpackDevIndex).on('error', function () {
         this.emit('end')
       }))
       .pipe(gulp.dest(clientOut))
@@ -355,8 +311,7 @@ gulp.task('build', cb => {
   runSequence(
     'clean:out',
     'copy:extras',
-    'webpack:index',
-    'webpack:app',
+    'webpack',
     cb);
 });
 
@@ -364,8 +319,7 @@ gulp.task('build:dist', cb => {
   runSequence(
     'clean:out',
     'copy:extras',
-    'webpack:index:dist',
-    'webpack:app:dist',
+    'webpack:dist',
     'transpile:server',
     cb);
 });
@@ -385,20 +339,11 @@ function webpackBuilder(baseConfig, pathConfig) {
     .pipe(gulp.dest(clientOut));
 }
 
-
-gulp.task('webpack:index', () => {
-  return webpackBuilder(wpConf.dev, paths.client.index);
-});
-
-gulp.task('webpack:index:dist', () => {
-  return webpackBuilder(wpConf.prod, paths.client.index);
-});
-
-gulp.task('webpack:app', () => {
+gulp.task('webpack', () => {
   return webpackBuilder(wpConf.dev, paths.client.app);
 });
 
-gulp.task('webpack:app:dist', () => {
+gulp.task('webpack:dist', () => {
   return webpackBuilder(wpConf.prod, paths.client.app);
 });
 
@@ -410,53 +355,6 @@ gulp.task('transpile:server', () => {
     }))
     .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest(serverOut));
-});
-
-gulp.task('coverage:pre', () => {
-  return gulp.src(paths.server.scripts)
-  // Covering files
-    .pipe(plugins.istanbul({
-      instrumenter: Instrumenter, // Use the isparta instrumenter (code coverage for ES6)
-      includeUntested: true
-    }))
-    // Force `require` to return covered files
-    .pipe(plugins.istanbul.hookRequire());
-});
-
-gulp.task('coverage:unit', () => {
-  return gulp.src(paths.server.test.unit)
-    .pipe(mocha())
-    .pipe(istanbul());
-  // Creating the reports after tests ran
-});
-
-gulp.task('coverage:integration', () => {
-  return gulp.src(paths.server.test.integration)
-    .pipe(mocha())
-    .pipe(istanbul());
-  // Creating the reports after tests ran
-});
-
-gulp.task('mocha:coverage', cb => {
-  runSequence('coverage:pre',
-    'env:test',
-    'coverage:unit',
-    'coverage:integration',
-    cb);
-});
-
-// Downloads the selenium webdriver
-gulp.task('webdriver_update', webdriver_update);
-
-gulp.task('test:e2e', ['env:test', 'start:server', 'webdriver_update'], cb => {
-  gulp.src(paths.client.e2e)
-    .pipe(protractor({
-      configFile: 'protractor.conf.js',
-    })).on('error', err => {
-    console.log(err)
-  }).on('end', () => {
-    process.exit();
-  });
 });
 
 gulp.task('debug:webpackConf', cb => {
