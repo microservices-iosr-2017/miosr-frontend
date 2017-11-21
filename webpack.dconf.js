@@ -9,45 +9,62 @@ function base() {
       filename: '[hash].bundle.js',
     },
     module: {
-      loaders: [{
+      rules: [{
         test: /\.jsx?$/,
-        loader: 'babel',
+        loader: 'babel-loader',
         include: [/src[\/\\]node_modules/]
       }, {
         test: /\.scss$/,
-        loaders: ['style', 'css', 'postcss', 'resolve-url', 'sass'],
+        use: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: function () {
+                return [autoprefixer]
+              }
+            }
+          },
+          'resolve-url-loader',
+          {
+            loader:'sass-loader',
+            options: {
+              sourceMap: true
+            }
+          }
+        ],
       }, {
         test: /\.css$/,
-        loaders: ['style', 'css', 'postcss']
+        use: [
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: function () {
+                return [autoprefixer]
+              }
+            }
+          },
+          'style-loader',
+          'css-loader'
+        ]
       }, {
         test: /\.png$/,
         loader: 'file'
       },
-        {test: /\.woff$/, loader: 'url?limit=10000&minetype=font/woff'},
-        {test: /\.woff2$/, loader: 'url?limit=10000&minetype=font/woff2'},
-        {test: /\.ttf$/, loader: 'file'},
-        {test: /\.eot$/, loader: 'file'},
-        {test: /\.svg$/, loader: 'file'}
+        {test: /\.woff$/, loader: 'url-loader?limit=10000&minetype=font/woff'},
+        {test: /\.woff2$/, loader: 'url-loader?limit=10000&minetype=font/woff2'},
+        {test: /\.ttf$/, loader: 'file-loader'},
+        {test: /\.eot$/, loader: 'file-loader'},
+        {test: /\.svg$/, loader: 'file-loader'}
       ]
     },
     plugins: [
-      new webpack.ProvidePlugin({
-        Promise: 'imports?this=>global!exports?global.Promise!es6-promise',
-        fetch: 'imports?this=>global!exports?global.fetch!whatwg-fetch',
-        Request: 'imports?this=>global!exports?global.Request!whatwg-fetch',
-        Response: 'imports?this=>global!exports?global.Response!whatwg-fetch',
-        Headers: 'imports?this=>global!exports?global.Headers!whatwg-fetch',
-      }),
+
     ],
     externals: {},
-    postcss: function () {
-      return [autoprefixer];
-    },
     resolve: {
-      extensions: ['', '.js', '.jsx', '.json'],
-    },
-    sassLoader: {
-      sourceMap: true
+      extensions: ['.js', '.jsx', '.json'],
     },
   };
 }
