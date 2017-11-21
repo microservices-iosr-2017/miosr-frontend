@@ -37,6 +37,7 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.7.2",
+    "bdd-lazy-var": "^1.3.1",
     "chai": "^3.2.0",
     "chai-as-promised": "^5.1.0",
     "chai-enzyme": "^0.4.2",
