@@ -1,7 +1,6 @@
 {
   "name": "miosr",
   "version": "0.0.0",
-  "main": "server/app.js",
   "dependencies": {
     "alt": "^0.18.4",
     "axios": "^0.14.0",
@@ -110,13 +109,8 @@
     "yargs": "^4.6.0"
   },
   "engines": {
-    "node": "^4.2.3",
+    "node": "^5.10.0",
     "npm": "^3.8.3"
-  },
-  "scripts": {
-    "start": "gulp start:dist",
-    "test": "gulp test",
-    "postinstall": "[ \"$NODE_ENV\" = production ] || exit 0; gulp build:dist"
   },
   "private": true
 }
