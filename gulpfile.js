@@ -88,7 +88,65 @@ function webpackConf(baseConfig, pathsConfig) {
 }
 
 /********************
- * Reusable pipelines
+ * TOP-LEVEL TASKS
+ * (they mostly aggregate simpler tasks)
+ ********************/
+gulp.task('lint', ['lint:client', 'lint:clienttests', 'lint:server', 'lint:servertests']);
+
+gulp.task('serve', cb => {
+  runSequence(
+    'build',
+    'start',
+    'watch',
+    cb);
+});
+
+gulp.task('serve:dist', cb => {
+  runSequence(
+    'build:dist',
+    'start:dist',
+    cb);
+});
+
+gulp.task('test', cb => {
+  return runSequence('test:server', 'test:client', cb);
+});
+
+gulp.task('test:server', cb => {
+  runSequence(
+    'mocha:unit',
+    'mocha:integration',
+    cb);
+});
+
+gulp.task('test:client', (done) => {
+  startKarmaServer(false, done);
+});
+
+gulp.task('test:client:cont', (done) => {
+  startKarmaServer(true, done);
+});
+
+gulp.task('build', cb => {
+  runSequence(
+    'clean:out',
+    'copy:extras',
+    'webpack',
+    cb);
+});
+
+gulp.task('build:dist', cb => {
+  runSequence(
+    'clean:out',
+    'copy:extras',
+    'webpack:dist',
+    'transpile:server',
+    cb);
+});
+
+
+/********************
+ * Reusable pipelines & subtasks
  ********************/
 
 let lintScripts = lazypipe()
@@ -111,9 +169,7 @@ function mocha(port) {
   });
 }
 
-/********************
- * Env
- ********************/
+/* setting required environment variables */
 
 function commonConfig() {
   process.env.CLIENT_ROOT = clientOut;
@@ -137,10 +193,6 @@ gulp.task('env:dist', () => {
   process.env.NODE_ENV = 'production';
 });
 
-/********************
- * Tasks
- ********************/
-
 /* Linting */
 gulp.task('lint:client', () => {
   return gulp.src(paths.client.scripts)
@@ -162,10 +214,8 @@ gulp.task('lint:servertests', () => {
     .pipe(lintScripts());
 });
 
-gulp.task('lint', ['lint:client', 'lint:clienttests', 'lint:server', 'lint:servertests']);
 
-
-/* Building client code with webpack, serving it locally */
+/* webpack builds */
 
 gulp.task('copy:extras', () => {
   return gulp.src(paths.client.extras, {dot: true})
@@ -186,20 +236,7 @@ gulp.task('webpack:dist', () => {
   return webpackBuilder(wpConf.prod, paths.client.app);
 });
 
-gulp.task('serve', cb => {
-  runSequence(
-    'build',
-    'start',
-    'watch',
-    cb);
-});
 
-gulp.task('serve:dist', cb => {
-  runSequence(
-    'build:dist',
-    'start:dist',
-    cb);
-});
 
 
 /* Server startup */
@@ -253,21 +290,8 @@ gulp.task('watch', () => {
   });
 });
 
-/********************
- * Testing
- ********************/
 
-gulp.task('test', cb => {
-  return runSequence('test:server', 'test:client', cb);
-});
-
-gulp.task('test:server', cb => {
-  runSequence(
-    'mocha:unit',
-    'mocha:integration',
-    cb);
-});
-
+/* Tests */
 gulp.task('mocha:unit', ['env:test'], () => {
   return gulp.src(paths.server.test.unit)
     .pipe(mocha(9001)());
@@ -278,13 +302,6 @@ gulp.task('mocha:integration', ['env:test'], () => {
     .pipe(mocha(9002)());
 });
 
-gulp.task('test:client', (done) => {
-  startKarmaServer(false, done);
-});
-
-gulp.task('test:client:cont', (done) => {
-  startKarmaServer(true, done);
-});
 
 const SUPPORTED_BROWSERS = ['IE', 'Firefox', 'Chrome', 'Opera', 'Safari', 'PhantomJS'];
 
@@ -333,9 +350,7 @@ function startKarmaServer(continous, done) {
   if (runTests) new KarmaServer(config, done).start();
 }
 
-/********************
- * Build release version, ready to be deployed
- ********************/
+/* build helpers */
 
 gulp.task('transpile:server', () => {
   return gulp.src(_.union(paths.server.scripts, paths.server.json))
@@ -345,24 +360,6 @@ gulp.task('transpile:server', () => {
     }))
     .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest(serverOut));
-});
-
-
-gulp.task('build', cb => {
-  runSequence(
-    'clean:out',
-    'copy:extras',
-    'webpack',
-    cb);
-});
-
-gulp.task('build:dist', cb => {
-  runSequence(
-    'clean:out',
-    'copy:extras',
-    'webpack:dist',
-    'transpile:server',
-    cb);
 });
 
 /* helper tasks for cleaning */
