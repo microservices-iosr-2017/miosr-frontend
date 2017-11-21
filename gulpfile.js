@@ -214,12 +214,12 @@ gulp.task('watch', () => {
   const webpackDev = webpackConf(wpConf.dev, paths.client.app);
 
   return plugins.watch([`${clientPath}/**/*`, paths.client.app.htmlTemplate,
-    `!/**/*${intellijTempFileSuffix}`, `${paths.client.sharedJs}/**/*`], {
+    `!/**/*${intellijTempFileSuffix}`], {
     name: 'AppWatcher'
   }, () => {
     gulp.src(paths.client.app.entrypoint)
       .pipe(plumber())
-      .pipe(webpackStream(webpackDevApp).on('error', function () {
+      .pipe(webpackStream(webpackDev).on('error', function () {
         this.emit('end')
       }))
       .pipe(gulp.dest(clientOut))
