@@ -9,13 +9,13 @@ function base() {
       filename: '[hash].bundle.js',
     },
     module: {
-      rules: [{
+      loaders: [{
         test: /\.jsx?$/,
-        loader: 'babel-loader',
+        loaders: ['babel-loader'],
         include: [/src[\/\\]node_modules/]
       }, {
         test: /\.scss$/,
-        use: [
+        loaders: [
           'style-loader',
           'css-loader',
           {
@@ -36,7 +36,7 @@ function base() {
         ],
       }, {
         test: /\.css$/,
-        use: [
+        loaders: [
           {
             loader: 'postcss-loader',
             options: {
@@ -50,13 +50,34 @@ function base() {
         ]
       }, {
         test: /\.png$/,
-        loader: 'file'
+        loaders: ['file']
       },
-        {test: /\.woff$/, loader: 'url-loader?limit=10000&minetype=font/woff'},
-        {test: /\.woff2$/, loader: 'url-loader?limit=10000&minetype=font/woff2'},
-        {test: /\.ttf$/, loader: 'file-loader'},
-        {test: /\.eot$/, loader: 'file-loader'},
-        {test: /\.svg$/, loader: 'file-loader'}
+        {
+          test: /\.woff$/, loaders: [
+            {
+              loader: 'url-loader',
+              options: {
+                limit: 10000,
+                minetype: "font/woff"
+              }
+            }
+          ]
+        },
+        {
+          test: /\.woff2$/,
+          loaders: [
+            {
+              loader: 'url-loader',
+              options: {
+                limit: 10000,
+                minetype: "font/woff2"
+              }
+            }
+          ]
+        },
+        {test: /\.ttf$/, loaders: ['file-loader']},
+        {test: /\.eot$/, loaders: ['file-loader']},
+        {test: /\.svg$/, loaders: ['file-loader']}
       ]
     },
     plugins: [
@@ -94,7 +115,7 @@ function env(wc) {
 }
 
 function jsonLoader(wc) {
-  wc.module.loaders.push({test: /\.json$/, loader: 'json'});
+  wc.module.loaders.push({test: /\.json$/, loader: 'json-loader'});
   return wc;
 }
 
@@ -117,7 +138,7 @@ function babelRewirePlugin(wc) {
 
 const dev = _.flow(base, sourceMaps);
 const prod = _.flow(base, env, uglify);
-const karma = _.flow(base, inlineSourceMaps, jsonLoader, reactKarmaExternals, babelRewirePlugin);
+const karma = _.flow(base, inlineSourceMaps, jsonLoader, reactKarmaExternals);
 
 module.exports = {
   dev: dev,
