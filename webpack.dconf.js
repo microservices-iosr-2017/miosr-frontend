@@ -8,6 +8,7 @@ function base() {
     output: {
       filename: '[hash].bundle.js',
     },
+    node: {fs: "empty"},
     module: {
       loaders: [{
         test: /\.jsx?$/,
