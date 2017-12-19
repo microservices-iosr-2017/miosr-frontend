@@ -11,4 +11,4 @@ ENV PORT 8080
 EXPOSE 8080
 
 WORKDIR /webapp/
-RUN node build/node_modules/server
+ENTRYPOINT node build/node_modules/server
