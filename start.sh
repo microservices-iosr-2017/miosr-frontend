@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # this file is copied inside docker image
 # expects to be run from /webapp/ directory within container
