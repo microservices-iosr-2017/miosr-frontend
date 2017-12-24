@@ -1,0 +1,12 @@
+steps:
+- name: 'gcr.io/cloud-builders/npm'
+  args: ['install']
+- name: 'debian'
+  args: ['node_modules/.bin/gulp', 'build:dist']
+- name: 'debian'
+  args: ['rm', '-rf', 'node_modules']
+- name: 'gcr.io/cloud-builders/npm'
+  args: ['install', '--production']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '--tag=gcr.io/$PROJECT_ID/$REPO_NAME:$TAG_NAME', '.']
+images: ['gcr.io/$PROJECT_ID/$REPO_NAME:$TAG_NAME']

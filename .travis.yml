@@ -1,8 +1,28 @@
 language: node_js
 node_js:
-  - 5.10.0
-matrix:
-  fast_finish: true
+  - "8"
+service:
+  - docker
+
 before_script:
-  - npm install -g gulp
-script: gulp test -b Phantom
+  - npm install -g gulp-cli
+  - npm install
+
+script:
+  - if [ -n "$TRAVIS_TAG" ]; then
+      gulp build:dist;
+    else
+      gulp test -b Phantom;
+      gulp build:dist;
+    fi
+
+after_success:
+  - if [ -n "$TRAVIS_TAG" ]; then
+      rm -rf node_modules;
+      npm install --production;
+
+      docker build -t "kroczi/miosr-frontend:$TRAVIS_TAG" . ;
+      docker login -u "$DOCKER_USERNAME_MK" -p "$DOCKER_PASSWORD_MK";
+      docker push kroczi/miosr-frontend;
+    fi
+
